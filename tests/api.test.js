@@ -46,3 +46,16 @@ test("fetchJobStoryIds requests the job stories endpoint", async () => {
 
   assert.equal(jobIds, expectedIds);
 });
+
+test("fetchUpdatedItemIds returns item IDs from the live updates endpoint", async () => {
+  const expectedIds = [301, 302];
+  const requestJson = async (url) => {
+    assert.equal(url, "https://hacker-news.firebaseio.com/v0/updates.json");
+    return { items: expectedIds, profiles: ["user1"] };
+  };
+  const api = createHackerNewsApi(requestJson);
+
+  const updatedItemIds = await api.fetchUpdatedItemIds();
+
+  assert.equal(updatedItemIds, expectedIds);
+});

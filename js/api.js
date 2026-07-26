@@ -25,5 +25,16 @@ export function createHackerNewsApi(requestJson) {
     return requestJson(`${API_BASE_URL}/jobstories.json`);
   }
 
-  return { fetchItem, fetchNewStoryIds, fetchJobStoryIds };
+  // Returns IDs for items that Hacker News reports as recently changed.
+  async function fetchUpdatedItemIds() {
+    const updates = await requestJson(`${API_BASE_URL}/updates.json`);
+    return updates.items;
+  }
+
+  return {
+    fetchItem,
+    fetchNewStoryIds,
+    fetchJobStoryIds,
+    fetchUpdatedItemIds,
+  };
 }
