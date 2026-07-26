@@ -15,5 +15,10 @@ export function createHackerNewsApi(requestJson) {
     return item;
   }
 
-  return { fetchItem };
+  // Returns the Hacker News IDs currently listed as new stories.
+  async function fetchNewStoryIds() {
+    return requestJson(`${API_BASE_URL}/newstories.json`);
+  }
+
+  return { fetchItem, fetchNewStoryIds };
 }
