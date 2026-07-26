@@ -20,5 +20,10 @@ export function createHackerNewsApi(requestJson) {
     return requestJson(`${API_BASE_URL}/newstories.json`);
   }
 
-  return { fetchItem, fetchNewStoryIds };
+  // Returns the Hacker News IDs currently listed as job posts.
+  async function fetchJobStoryIds() {
+    return requestJson(`${API_BASE_URL}/jobstories.json`);
+  }
+
+  return { fetchItem, fetchNewStoryIds, fetchJobStoryIds };
 }
