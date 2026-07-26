@@ -1,7 +1,25 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createHackerNewsApi } from "../js/api.js";
+import { createHackerNewsApi, requestJson } from "../js/api.js";
+
+test("requestJson fetches a URL and returns its JSON data", async () => {
+  const expectedData = { id: 401, type: "story" };
+  const fetchJson = async (url) => {
+    assert.equal(url, "https://hacker-news.firebaseio.com/v0/item/401.json");
+    return {
+      ok: true,
+      json: async () => expectedData,
+    };
+  };
+
+  const data = await requestJson(
+    "https://hacker-news.firebaseio.com/v0/item/401.json",
+    fetchJson,
+  );
+
+  assert.equal(data, expectedData);
+});
 
 test("fetchItem reuses a cached item instead of requesting it twice", async () => {
   let requestCount = 0;

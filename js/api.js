@@ -1,5 +1,17 @@
 const API_BASE_URL = "https://hacker-news.firebaseio.com/v0";
 
+// Fetches one URL with the browser's built-in fetch and returns its JSON data.
+// Tests can pass a fake fetchFunction to avoid making a real network request.
+export async function requestJson(url, fetchFunction = fetch) {
+  const response = await fetchFunction(url);
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
 // Creates API methods that use the provided function to request JSON data.
 export function createHackerNewsApi(requestJson) {
   const itemCache = new Map();
