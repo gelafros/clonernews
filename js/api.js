@@ -4,15 +4,23 @@ const API_BASE_URL = "https://hacker-news.firebaseio.com/v0";
 export function createHackerNewsApi(requestJson) {
   const itemCache = new Map();
 
-  // Returns one item, reusing the in-memory cache after its first request.
+  // Returns one item, sharing a pending request and caching a successful result.
   async function fetchItem(id) {
     if (itemCache.has(id)) {
       return itemCache.get(id);
     }
 
-    const item = await requestJson(`${API_BASE_URL}/item/${id}.json`);
-    itemCache.set(id, item);
-    return item;
+    const itemRequest = requestJson(`${API_BASE_URL}/item/${id}.json`);
+    itemCache.set(id, itemRequest);
+
+    try {
+      const item = await itemRequest;
+      itemCache.set(id, item);
+      return item;
+    } catch (error) {
+      itemCache.delete(id);
+      throw error;
+    }
   }
 
   // Returns the Hacker News IDs currently listed as new stories.

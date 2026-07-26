@@ -21,6 +21,29 @@ test("fetchItem reuses a cached item instead of requesting it twice", async () =
   assert.equal(requestCount, 1);
 });
 
+test("fetchItem reuses an in-flight request for the same item", async () => {
+  let requestCount = 0;
+  let resolveRequest;
+  const expectedItem = { id: 124, title: "In-flight item", type: "story" };
+  const requestJson = () => {
+    requestCount += 1;
+    return new Promise((resolve) => {
+      resolveRequest = resolve;
+    });
+  };
+  const api = createHackerNewsApi(requestJson);
+
+  const firstRequest = api.fetchItem(124);
+  const secondRequest = api.fetchItem(124);
+  resolveRequest(expectedItem);
+
+  const [firstItem, secondItem] = await Promise.all([firstRequest, secondRequest]);
+
+  assert.equal(firstItem, expectedItem);
+  assert.equal(secondItem, expectedItem);
+  assert.equal(requestCount, 1);
+});
+
 test("fetchNewStoryIds requests the new stories endpoint", async () => {
   const expectedIds = [101, 102, 103];
   const requestJson = async (url) => {
