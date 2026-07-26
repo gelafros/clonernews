@@ -20,3 +20,16 @@ test("fetchItem reuses a cached item instead of requesting it twice", async () =
   assert.equal(secondItem, expectedItem);
   assert.equal(requestCount, 1);
 });
+
+test("fetchNewStoryIds requests the new stories endpoint", async () => {
+  const expectedIds = [101, 102, 103];
+  const requestJson = async (url) => {
+    assert.equal(url, "https://hacker-news.firebaseio.com/v0/newstories.json");
+    return expectedIds;
+  };
+  const api = createHackerNewsApi(requestJson);
+
+  const storyIds = await api.fetchNewStoryIds();
+
+  assert.equal(storyIds, expectedIds);
+});
