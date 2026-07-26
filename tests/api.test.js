@@ -21,6 +21,15 @@ test("requestJson fetches a URL and returns its JSON data", async () => {
   assert.equal(data, expectedData);
 });
 
+test("requestJson rejects an unsuccessful HTTP response", async () => {
+  const fetchJson = async () => ({ ok: false, status: 404 });
+
+  await assert.rejects(
+    requestJson("https://hacker-news.firebaseio.com/v0/item/404.json", fetchJson),
+    /Request failed with status 404/,
+  );
+});
+
 test("fetchItem reuses a cached item instead of requesting it twice", async () => {
   let requestCount = 0;
   const expectedItem = { id: 123, title: "Cached item", type: "story" };
