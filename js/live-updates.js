@@ -30,7 +30,13 @@ export function createLiveUpdates(api, getDisplayedPosts, showNotification) {
 
   // Fetches current updates and notifies only for new updates to displayed posts.
   async function checkForUpdates() {
-    const currentUpdatedIds = await api.fetchUpdatedItemIds();
+    let currentUpdatedIds;
+
+    try {
+      currentUpdatedIds = await api.fetchUpdatedItemIds();
+    } catch {
+      return;
+    }
 
     if (previousUpdatedIds === null) {
       previousUpdatedIds = currentUpdatedIds;

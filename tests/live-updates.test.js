@@ -79,3 +79,27 @@ test("formatUpdateMessage names multiple updated posts", () => {
 
   assert.equal(message, 'Updated posts: "Story A", "Job B"');
 });
+
+test("createLiveUpdates ignores a failed poll and accepts a later baseline", async () => {
+  let requestCount = 0;
+  const api = {
+    fetchUpdatedItemIds: async () => {
+      requestCount += 1;
+
+      if (requestCount === 1) {
+        throw new Error("Network unavailable");
+      }
+
+      return [10];
+    },
+  };
+  const notifications = [];
+  const liveUpdates = createLiveUpdates(api, () => [], (posts) => {
+    notifications.push(posts);
+  });
+
+  await assert.doesNotReject(liveUpdates.checkForUpdates());
+  await liveUpdates.checkForUpdates();
+
+  assert.deepEqual(notifications, []);
+});
