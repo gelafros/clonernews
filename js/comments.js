@@ -1,39 +1,86 @@
+const postCommentsCache = new Map();
+
+// Helper function that builds comment and child comment data
+async function buildCommentNode(api, commentId, expectedParentId) {
+    let comment;
+
+    try {
+        comment = await api.fetchItem(commentId);
+    } catch {
+        return null;
+    }
+
+    // valid comment check, for now they are ignored
+    if (!comment) return null;
+    if (comment.type !== "comment") return null;
+    // parent must match expected tree position
+    if (comment.parent !== expectedParentId) return null;
+    if (comment.deleted === true) return null;
+    if (comment.dead === true) return null;
+
+    // kids are direct child comment IDs for this comment
+    const childIds = Array.isArray(comment.kids) ? comment.kids : [];
+
+    // recursively build all nested replies
+    const childNodes = await Promise.all(
+        childIds.map((childId) => buildCommentNode(api, childId, comment.id))
+    );
+
+    //sort the nested comments
+    const replies = childNodes
+        .filter((node) => node !== null)
+        .sort((a, b) => b.time - a.time);
+
+    return {
+        id: comment.id,
+        parent: comment.parent,
+        by: comment.by ?? "unknown",
+        time: comment.time ?? 0,
+        text: comment.text ?? "",
+        status: "ok",
+        replies,
+    };
+}
+
 // Builds a comment structure for rendering
 export async function commentBuild(api, post) {
-    if (!api || !post)
+    if (!api || !post) {
         return { postId: null, totalDirectComments: 0, comments: [] };
+    }
 
     // put IDs in variables and check if null or undefined
-    const postid = post.id ?? null
-    const commentid = Array.isArray(post) ? post.kids : [];
+    const postId = post.id ?? null;
+    const commentIds = Array.isArray(post.kids) ? post.kids : [];
+
+    // reuse built comment trees for previously opened posts
+    // this avoids rebuilding and refetching comment trees on repeat clicks
+    if (postCommentsCache.has(postId)) {
+        return postCommentsCache.get(postId);
+    }
 
 
     if (!postId || commentIds.length === 0) {
         return { postId, totalDirectComments: 0, comments: [] };
     }
 
-    // fetch comments from selected post
-    const directComments = await Promise.all(
-        commentIds.map((id) => api.fetchItem(id))
+    // normalize the data for rendering, preparation for nested replies
+    const commentNodes = await Promise.all(
+        commentIds.map((id) => buildCommentNode(api, id, postId))
     );
 
-    //filter through comments, ignore if not valid and sort by time descending
-    const validDirectComments = directComments
-        .filter((comment) => {
-            if (!comment) return false;
-            if (comment.type !== "comment") return false;
-            if (comment.parent !== postId) return false;
-            if (comment.deleted === true) return false;
-            if (comment.dead === true) return false;
-            return true;
-        })
-        .sort((a, b) => (b.time ?? 0) - (a.time ?? 0));
+    const comments = commentNodes
+        .filter((node) => node !== null)
+        .sort((a, b) => b.time - a.time);
 
-
-    return {
+    const result = {
         postId,
-        totalDirectComments: directComments.length,
-        comments: directComments,
+        totalDirectComments: comments.length,
+        comments,
     };
+
+    // cache built tree for later reuse
+    postCommentsCache.set(postId, result);
+
+    return result;
 }
 
