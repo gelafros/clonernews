@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   createLiveUpdates,
   findNewDisplayedUpdates,
+  formatUpdateMessage,
 } from "../js/live-updates.js";
 
 test("findNewDisplayedUpdates returns only newly updated displayed posts", () => {
@@ -60,4 +61,21 @@ test("createLiveUpdates starts only one five-second timer", async () => {
   await liveUpdates.start(setIntervalFunction);
 
   assert.equal(timerCount, 1);
+});
+
+test("formatUpdateMessage names one updated post", () => {
+  const message = formatUpdateMessage([
+    { id: 30, title: "Updated story" },
+  ]);
+
+  assert.equal(message, 'Updated post: "Updated story"');
+});
+
+test("formatUpdateMessage names multiple updated posts", () => {
+  const message = formatUpdateMessage([
+    { id: 30, title: "Story A" },
+    { id: 40, title: "Job B" },
+  ]);
+
+  assert.equal(message, 'Updated posts: "Story A", "Job B"');
 });

@@ -12,6 +12,17 @@ export function findNewDisplayedUpdates(
   return displayedPosts.filter((post) => newIdSet.has(post.id));
 }
 
+// Formats updated post titles into a clear singular or plural notification.
+export function formatUpdateMessage(updatedPosts) {
+  const titles = updatedPosts.map((post) => `"${post.title}"`);
+
+  if (titles.length === 1) {
+    return `Updated post: ${titles[0]}`;
+  }
+
+  return `Updated posts: ${titles.join(", ")}`;
+}
+
 // Creates a live-update controller that compares each poll with the previous one.
 export function createLiveUpdates(api, getDisplayedPosts, showNotification) {
   let previousUpdatedIds = null;
