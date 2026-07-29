@@ -42,3 +42,22 @@ test("createLiveUpdates uses the first poll as a baseline", async () => {
   await liveUpdates.checkForUpdates();
   assert.deepEqual(notifications, [displayedPosts]);
 });
+
+test("createLiveUpdates starts only one five-second timer", async () => {
+  const api = {
+    fetchUpdatedItemIds: async () => [],
+  };
+  let timerCount = 0;
+  const setIntervalFunction = (callback, delay) => {
+    timerCount += 1;
+    assert.equal(typeof callback, "function");
+    assert.equal(delay, 5000);
+    return timerCount;
+  };
+  const liveUpdates = createLiveUpdates(api, () => [], () => {});
+
+  await liveUpdates.start(setIntervalFunction);
+  await liveUpdates.start(setIntervalFunction);
+
+  assert.equal(timerCount, 1);
+});

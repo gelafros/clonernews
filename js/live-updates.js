@@ -15,6 +15,7 @@ export function findNewDisplayedUpdates(
 // Creates a live-update controller that compares each poll with the previous one.
 export function createLiveUpdates(api, getDisplayedPosts, showNotification) {
   let previousUpdatedIds = null;
+  let timerId = null;
 
   // Fetches current updates and notifies only for new updates to displayed posts.
   async function checkForUpdates() {
@@ -37,5 +38,15 @@ export function createLiveUpdates(api, getDisplayedPosts, showNotification) {
     }
   }
 
-  return { checkForUpdates };
+  // Starts one five-second timer after the first poll establishes a baseline.
+  async function start(setIntervalFunction = setInterval) {
+    if (timerId !== null) {
+      return;
+    }
+
+    await checkForUpdates();
+    timerId = setIntervalFunction(checkForUpdates, 5000);
+  }
+
+  return { checkForUpdates, start };
 }
