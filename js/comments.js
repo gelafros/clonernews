@@ -1,5 +1,18 @@
 const postCommentsCache = new Map();
 
+function createInvalidCommentNode(commentId, parentId, status, time = 0) {
+    return {
+        id: commentId,
+        parent: parentId,
+        by: "unknown",
+        time,
+        text: status === "deleted" ? "Deleted by user" : "Unavailable",
+        status,
+        isValid: false,
+        replies: [],
+    };
+}
+
 // Helper function that builds comment and child comment data
 async function buildCommentNode(api, commentId, expectedParentId) {
     let comment;
@@ -7,16 +20,16 @@ async function buildCommentNode(api, commentId, expectedParentId) {
     try {
         comment = await api.fetchItem(commentId);
     } catch {
-        return null;
+        return createInvalidCommentNode(commentId, expectedParentId, "unavailable");
     }
 
-    // valid comment check, for now they are ignored
-    if (!comment) return null;
-    if (comment.type !== "comment") return null;
+    // show invalid/unavailable comments instead of hiding them
+    if (!comment) return createInvalidCommentNode(commentId, expectedParentId, "unavailable");
+    if (comment.type !== "comment") return createInvalidCommentNode(commentId, expectedParentId, "unavailable", comment.time ?? 0);
     // parent must match expected tree position
     if (comment.parent !== expectedParentId) return null;
-    if (comment.deleted === true) return null;
-    if (comment.dead === true) return null;
+    if (comment.deleted === true) return createInvalidCommentNode(comment.id, comment.parent, "deleted", comment.time ?? 0);
+    if (comment.dead === true) return createInvalidCommentNode(comment.id, comment.parent, "unavailable", comment.time ?? 0);
 
     // kids are direct child comment IDs for this comment
     const childIds = Array.isArray(comment.kids) ? comment.kids : [];
@@ -38,6 +51,7 @@ async function buildCommentNode(api, commentId, expectedParentId) {
         time: comment.time ?? 0,
         text: comment.text ?? "",
         status: "ok",
+        isValid: true,
         replies,
     };
 }
