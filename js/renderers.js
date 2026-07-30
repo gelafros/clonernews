@@ -161,3 +161,18 @@ export function renderPostList(posts, postList, onPostSelect) {
         postList.appendChild(listItem);
     });
 }
+
+/**
+ * Appends new post elements to an existing list without clearing it.
+ * Used by load-more to avoid re-rendering previously displayed posts.
+ * @param {{ id: number, title?: string, type: string, hasComments?: boolean }[]} newPosts - New posts to append.
+ * @param {HTMLElement} postList - Post list container (`<ul>`).
+ * @param {(post: object) => void} onPostSelect - Callback run when a post is clicked.
+ */
+export function appendToPostList(newPosts, postList, onPostSelect) {
+    newPosts.forEach((post) => {
+        const listItem = document.createElement("li");
+        listItem.appendChild(createPostButton(post, onPostSelect));
+        postList.appendChild(listItem);
+    });
+}

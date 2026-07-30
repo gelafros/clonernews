@@ -1,6 +1,6 @@
 import { getNextBatch, hasMore, initItems } from "./posts.js";
 import { findRecentPollIds } from "./poll-discovery.js";
-import { renderPostList } from "./renderers.js";
+import { appendToPostList, renderPostList } from "./renderers.js";
 
 const FEED_CHANGE_DEBOUNCE_MS = 250;
 
@@ -67,19 +67,18 @@ export function createFeedController(deps) {
 
         visibleItems.sort((a, b) => (b.time ?? 0) - (a.time ?? 0));
 
-        const byId = new Map(renderedFeed.map((post) => [post.id, post]));
-        visibleItems.forEach((post) => {
-            byId.set(post.id, post);
-        });
+        // Only append posts not already in the rendered feed.
+        const existingIds = new Set(renderedFeed.map((p) => p.id));
+        const newPosts = visibleItems.filter((p) => !existingIds.has(p.id));
 
-        renderedFeed.length = 0;
-        renderedFeed.push(...Array.from(byId.values()));
-        renderedFeed.sort((a, b) => (b.time ?? 0) - (a.time ?? 0));
+        // Track all posts for live-update cross-checking.
+        newPosts.forEach((post) => renderedFeed.push(post));
 
-        renderPostList(renderedFeed, postList, onPostSelect);
+        // Append only new elements — avoid re-rendering the full list.
+        appendToPostList(newPosts, postList, onPostSelect);
 
-        displayedPosts.clear();
-        renderedFeed.forEach((post) => {
+        // Update displayed posts for live-updates tracking.
+        newPosts.forEach((post) => {
             const title = post.title || `Post ${post.id}`;
             displayedPosts.set(post.id, { id: post.id, title });
         });
