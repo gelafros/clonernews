@@ -1,3 +1,4 @@
+import { clearCommentCache } from "./comments.js";
 import { createHackerNewsApi, requestJson } from "./api.js";
 import { createFeedController } from "./feed-controller.js";
 import {
@@ -31,6 +32,8 @@ function getDisplayedPosts() {
 function showLiveUpdateNotification(updatedPosts) {
     const liveUpdateMessage = document.getElementById("live-update-message");
     liveUpdateMessage.textContent = formatUpdateMessage(updatedPosts);
+    // Invalidate cached comment trees so re-opening a live-updated post shows fresh comments.
+    updatedPosts.forEach((post) => clearCommentCache(post.id));
 }
 
 const liveUpdates = createLiveUpdates(

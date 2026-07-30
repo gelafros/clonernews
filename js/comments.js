@@ -1,6 +1,15 @@
 const postCommentsCache = new Map();
 
 /**
+ * Removes a post's comment tree from the cache so the next open fetches fresh data.
+ * Call this when live-updates reports that a displayed post has changed.
+ * @param {number} postId - The ID of the post whose cache entry should be cleared.
+ */
+export function clearCommentCache(postId) {
+    postCommentsCache.delete(postId);
+}
+
+/**
  * Creates a placeholder comment node for an item that is deleted or unavailable.
  * Used to keep invalid comments visible in the thread rather than silently hiding them.
  * @param {number} commentId - The ID of the comment.
