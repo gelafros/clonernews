@@ -1,4 +1,5 @@
 export const POLL_SEARCH_TIMEOUT_MS = 4000;
+let nextScanStartId = null;
 
 /**
  * Finds recent poll IDs by scanning backward from the latest item ID.
@@ -23,12 +24,18 @@ export async function findRecentPollIds(
         return { pollIds: [], timedOut: false };
     }
 
+    if (nextScanStartId === null || nextScanStartId > maxItemId) {
+        nextScanStartId = maxItemId;
+    }
+
     const pollIds = [];
-    const minItemId = Math.max(1, maxItemId - scanLimit);
+    const startId = nextScanStartId;
+    const minItemId = Math.max(1, startId - scanLimit + 1);
     const startedAt = Date.now();
     let timedOut = false;
+    let currentId = startId;
 
-    for (let id = maxItemId; id >= minItemId && pollIds.length < maxPolls; id -= 1) {
+    for (; currentId >= minItemId && pollIds.length < maxPolls; currentId -= 1) {
         if (Date.now() - startedAt >= timeoutMs) {
             timedOut = true;
             break;
@@ -37,7 +44,7 @@ export async function findRecentPollIds(
         let item;
 
         try {
-            item = await api.fetchItem(id);
+            item = await api.fetchItem(currentId);
         } catch {
             continue;
         }
@@ -45,6 +52,12 @@ export async function findRecentPollIds(
         if (item && item.type === "poll") {
             pollIds.push(item.id);
         }
+    }
+
+    // Resume at the next unscanned ID on the next call.
+    nextScanStartId = currentId;
+    if (nextScanStartId < 1) {
+        nextScanStartId = null;
     }
 
     return { pollIds, timedOut };

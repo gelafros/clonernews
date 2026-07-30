@@ -57,6 +57,38 @@ export function createHackerNewsApi(requestJson) {
   }
 
   /**
+   * Returns the Hacker News IDs currently listed as top stories.
+   * @returns {Promise<number[]>} The top story IDs.
+   */
+  async function fetchTopStoryIds() {
+    return requestJson(`${API_BASE_URL}/topstories.json`);
+  }
+
+  /**
+   * Returns the Hacker News IDs currently listed as best stories.
+   * @returns {Promise<number[]>} The best story IDs.
+   */
+  async function fetchBestStoryIds() {
+    return requestJson(`${API_BASE_URL}/beststories.json`);
+  }
+
+  /**
+   * Returns the Hacker News IDs currently listed as Ask HN stories.
+   * @returns {Promise<number[]>} The Ask HN story IDs.
+   */
+  async function fetchAskStoryIds() {
+    return requestJson(`${API_BASE_URL}/askstories.json`);
+  }
+
+  /**
+   * Returns the Hacker News IDs currently listed as Show HN stories.
+   * @returns {Promise<number[]>} The Show HN story IDs.
+   */
+  async function fetchShowStoryIds() {
+    return requestJson(`${API_BASE_URL}/showstories.json`);
+  }
+
+  /**
    * Returns the Hacker News IDs currently listed as job posts.
    * @returns {Promise<number[]>} The job IDs.
    */
@@ -85,6 +117,10 @@ export function createHackerNewsApi(requestJson) {
   return {
     fetchItem,
     fetchNewStoryIds,
+    fetchTopStoryIds,
+    fetchBestStoryIds,
+    fetchAskStoryIds,
+    fetchShowStoryIds,
     fetchJobStoryIds,
     fetchUpdatedItemIds,
     fetchMaxItemId,
