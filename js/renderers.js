@@ -22,9 +22,10 @@ function toPlainText(value) {
         return "";
     }
 
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = value;
-    return (wrapper.textContent || "").trim();
+    // DOMParser creates a fully sandboxed document — scripts do not execute
+    // and event handlers do not fire, satisfying the PRD's safe-rendering rule.
+    const doc = new DOMParser().parseFromString(value, "text/html");
+    return (doc.body.textContent || "").trim();
 }
 
 /**
