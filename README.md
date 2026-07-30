@@ -17,7 +17,7 @@ The app is split into small JavaScript modules, each with one clear responsibili
 - It creates shared state, wires controllers, loads initial story/job IDs, registers UI events, and starts live updates.
 
 3. Feed controller
-- js/feed-controller.js handles feed mode switching (All, Stories, Jobs, Polls), post-list reset, poll discovery integration, and load-more behavior.
+- js/feed-controller.js handles feed mode switching (All, Stories, Jobs, Polls, Top Stories, Best Stories, Ask HN, Show HN), post-list reset, poll discovery integration, and load-more behavior.
 - It debounces rapid feed-selector changes to reduce burst requests.
 - It also ignores stale async feed responses so old requests do not overwrite newer UI state.
 
@@ -42,7 +42,7 @@ The app is split into small JavaScript modules, each with one clear responsibili
 
 8. UI shell
 - js/ui-shell.js creates the full page structure at startup (header, status, feed selector, post list, selected post area, comments area).
-- Feed selector options are All, Stories, Jobs, and Polls.
+- Feed selector options are All, Stories, Jobs, Polls, Top Stories, Best Stories, Ask HN, and Show HN.
 
 9. Live updates
 - js/live-updates.js polls updates.json every 5 seconds.
@@ -76,8 +76,9 @@ This runs the Node test suite with node --test.
 
 ## Audit-relevant behavior
 
-- UI includes stories, jobs, and polls through the feed selector.
-- Posts are displayed newest-to-oldest.
-- Comments are validated against expected parent IDs before rendering.
-- Live updates are checked every 5 seconds.
-- Request pressure is reduced by shared item caching, debounced feed changes, and stale-response guards.
+- **Post Categories**: UI includes Stories, Jobs, and Polls (required) as well as Top Stories, Best Stories, Ask HN, and Show HN (bonus feeds).
+- **Post Ordering**: All feed lists are strictly ordered by their numerical timestamp (`time`), newest-to-oldest.
+- **Recursive Comments**: Direct comments and nested replies are rendered in hierarchical order, validated against expected parent IDs, and sorted newest-to-oldest.
+- **Live Updates**: Background updates check the HN live-updates endpoint every 5 seconds using a single timer. Pauses requests automatically when the browser tab is hidden (`document.hidden`).
+- **Throttling & Efficiency**: Throttles request rates using in-memory request-deduplication, debounced selector handlers, stale-response controller guards, and parallel batching (size of 5) during poll scans.
+- **Safety**: Raw API HTML is parsed inside a sandboxed `DOMParser` document rather than executing via dangerous `innerHTML` injections.
