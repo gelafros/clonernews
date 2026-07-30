@@ -17,11 +17,15 @@ const displayedPosts = new Map();
 /** @type {any[]} List of rendered feed post items */
 const renderedFeed = [];
 
-/** @type {{ storyIds: number[], jobIds: number[], pollIds: number[] }} Cache of fetched item IDs by category */
+/** @type {{ storyIds: number[], jobIds: number[], pollIds: number[], topIds: number[], bestIds: number[], askIds: number[], showIds: number[] }} Cache of fetched item IDs by category */
 const feedCache = {
     storyIds: [],
     jobIds: [],
     pollIds: [],
+    topIds: [],
+    bestIds: [],
+    askIds: [],
+    showIds: [],
 };
 
 /**

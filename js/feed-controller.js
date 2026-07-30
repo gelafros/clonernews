@@ -8,16 +8,16 @@ const FEED_CHANGE_DEBOUNCE_MS = 250;
 /**
  * Creates a controller for feed mode selection, pagination, and list rendering.
  * @param {{
- *   api: { fetchItem: (id: number) => Promise<any> },
+ *   api: object,
  *   displayedPosts: Map<number, { id: number, title: string }>,
  *   renderedFeed: any[],
- *   feedCache: { storyIds: number[], jobIds: number[], pollIds: number[] },
+ *   feedCache: { storyIds: number[], jobIds: number[], pollIds: number[], topIds: number[], bestIds: number[], askIds: number[], showIds: number[] },
  *   onPostSelect: (post: any) => Promise<void>
  * }} deps - Dependencies and mutable state containers.
  * @returns {{
- *   applyFeedMode: (mode: "all"|"stories"|"jobs"|"polls") => Promise<void>,
+ *   applyFeedMode: (mode: "all"|"stories"|"jobs"|"polls"|"top"|"best"|"ask"|"show") => Promise<void>,
  *   loadMorePosts: () => Promise<void>,
- *   scheduleFeedModeChange: (mode: "all"|"stories"|"jobs"|"polls") => void,
+ *   scheduleFeedModeChange: (mode: "all"|"stories"|"jobs"|"polls"|"top"|"best"|"ask"|"show") => void,
  * }}
  */
 export function createFeedController(deps) {
@@ -88,8 +88,52 @@ export function createFeedController(deps) {
     }
 
     /**
+     * Lazily fetches item IDs for modes that are not loaded at startup.
+     * Returns false when the caller should abort (request superseded or no data found).
+     * @param {"all"|"stories"|"jobs"|"polls"|"top"|"best"|"ask"|"show"} mode - Selected feed mode.
+     * @param {number} currentFeedRequestId - Stale-request guard value.
+     * @param {HTMLElement} status - Status paragraph element.
+     * @returns {Promise<boolean>} True to continue, false to abort.
+     */
+    async function ensureModeIds(mode, currentFeedRequestId, status) {
+        // Polls require a custom backward scan rather than a simple endpoint call.
+        if (mode === "polls" && feedCache.pollIds.length === 0) {
+            status.textContent = "Searching for polls...";
+            const pollSearchResult = await findRecentPollIds(api);
+            if (currentFeedRequestId !== activeFeedRequestId) return false;
+            feedCache.pollIds = pollSearchResult.pollIds;
+            if (pollSearchResult.timedOut && feedCache.pollIds.length === 0) {
+                status.textContent = "Poll search timed out. Try again in a moment.";
+                return false;
+            }
+            return true;
+        }
+
+        // All other non-startup modes share the same lazy-fetch pattern.
+        const lazyModes = {
+            top: { key: "topIds", fetch: () => api.fetchTopStoryIds(), label: "Loading top stories..." },
+            best: { key: "bestIds", fetch: () => api.fetchBestStoryIds(), label: "Loading best stories..." },
+            ask: { key: "askIds", fetch: () => api.fetchAskStoryIds(), label: "Loading Ask HN..." },
+            show: { key: "showIds", fetch: () => api.fetchShowStoryIds(), label: "Loading Show HN..." },
+        };
+
+        const entry = lazyModes[mode];
+        if (entry && feedCache[entry.key].length === 0) {
+            status.textContent = entry.label;
+            try {
+                feedCache[entry.key] = await entry.fetch();
+            } catch {
+                feedCache[entry.key] = [];
+            }
+            if (currentFeedRequestId !== activeFeedRequestId) return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Applies one feed mode and loads its first batch.
-     * @param {"all"|"stories"|"jobs"|"polls"} mode - Selected feed mode.
+     * @param {"all"|"stories"|"jobs"|"polls"|"top"|"best"|"ask"|"show"} mode - Selected feed mode.
      * @returns {Promise<void>}
      */
     async function applyFeedMode(mode) {
@@ -109,46 +153,44 @@ export function createFeedController(deps) {
         commentsContainer.textContent = "";
         loadMoreButton.disabled = true;
 
-        let pollSearchTimedOut = false;
+        // Lazily load IDs for modes that are not fetched at startup.
+        const shouldContinue = await ensureModeIds(mode, currentFeedRequestId, status);
+        if (!shouldContinue) return;
 
-        if (mode === "polls" && feedCache.pollIds.length === 0) {
-            status.textContent = "Searching for polls...";
-            const pollSearchResult = await findRecentPollIds(api);
-
-            if (currentFeedRequestId !== activeFeedRequestId) {
-                return;
-            }
-
-            feedCache.pollIds = pollSearchResult.pollIds;
-            pollSearchTimedOut = pollSearchResult.timedOut && feedCache.pollIds.length === 0;
-        }
-
+        // Route each mode to the correct cached ID list.
         if (mode === "all") {
             initItems(api, feedCache.storyIds, feedCache.jobIds);
         } else if (mode === "stories") {
             initItems(api, feedCache.storyIds, []);
         } else if (mode === "jobs") {
             initItems(api, [], feedCache.jobIds);
-        } else {
+        } else if (mode === "polls") {
             initItems(api, feedCache.pollIds, []);
+        } else if (mode === "top") {
+            initItems(api, feedCache.topIds, []);
+        } else if (mode === "best") {
+            initItems(api, feedCache.bestIds, []);
+        } else if (mode === "ask") {
+            initItems(api, feedCache.askIds, []);
+        } else {
+            // "show"
+            initItems(api, feedCache.showIds, []);
         }
 
-        const hasSourceItems =
-            mode === "all"
-                ? feedCache.storyIds.length + feedCache.jobIds.length > 0
-                : mode === "stories"
-                    ? feedCache.storyIds.length > 0
-                    : mode === "jobs"
-                        ? feedCache.jobIds.length > 0
-                        : feedCache.pollIds.length > 0;
+        // Count available source IDs for the selected mode.
+        const modeSourceCount = {
+            all: feedCache.storyIds.length + feedCache.jobIds.length,
+            stories: feedCache.storyIds.length,
+            jobs: feedCache.jobIds.length,
+            polls: feedCache.pollIds.length,
+            top: feedCache.topIds.length,
+            best: feedCache.bestIds.length,
+            ask: feedCache.askIds.length,
+            show: feedCache.showIds.length,
+        };
 
-        if (!hasSourceItems) {
-            if (mode === "polls" && pollSearchTimedOut) {
-                status.textContent = "Poll search timed out. Try again in a moment.";
-                return;
-            }
-
-            status.textContent = mode === "polls" ? "No recent polls found yet." : "No posts available.";
+        if ((modeSourceCount[mode] ?? 0) === 0) {
+            status.textContent = "No posts available.";
             return;
         }
 
@@ -174,7 +216,7 @@ export function createFeedController(deps) {
 
     /**
      * Debounces feed mode switching to avoid burst requests during rapid toggling.
-     * @param {"all"|"stories"|"jobs"|"polls"} mode - Selected feed mode.
+     * @param {"all"|"stories"|"jobs"|"polls"|"top"|"best"|"ask"|"show"} mode - Selected feed mode.
      */
     function scheduleFeedModeChange(mode) {
         if (feedChangeTimerId !== null) {

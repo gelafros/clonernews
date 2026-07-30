@@ -67,7 +67,23 @@ export function ensureAppShell() {
     pollsOption.value = "polls";
     pollsOption.textContent = "Polls";
 
-    feedSelect.append(allOption, storiesOption, jobsOption, pollsOption);
+    const topOption = document.createElement("option");
+    topOption.value = "top";
+    topOption.textContent = "Top Stories";
+
+    const bestOption = document.createElement("option");
+    bestOption.value = "best";
+    bestOption.textContent = "Best Stories";
+
+    const askOption = document.createElement("option");
+    askOption.value = "ask";
+    askOption.textContent = "Ask HN";
+
+    const showOption = document.createElement("option");
+    showOption.value = "show";
+    showOption.textContent = "Show HN";
+
+    feedSelect.append(allOption, storiesOption, jobsOption, pollsOption, topOption, bestOption, askOption, showOption);
 
     const postList = document.createElement("ul");
     postList.id = "post-list";
