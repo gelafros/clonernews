@@ -1,5 +1,14 @@
 const postCommentsCache = new Map();
 
+/**
+ * Creates a placeholder comment node for an item that is deleted or unavailable.
+ * Used to keep invalid comments visible in the thread rather than silently hiding them.
+ * @param {number} commentId - The ID of the comment.
+ * @param {number} parentId - The ID of the expected parent item.
+ * @param {"deleted"|"unavailable"} status - The reason the comment is invalid.
+ * @param {number} [time=0] - Unix timestamp of the comment, if known.
+ * @returns {{ id: number, parent: number, by: string, time: number, text: string, status: string, isValid: false, replies: [] }}
+ */
 function createInvalidCommentNode(commentId, parentId, status, time = 0) {
     return {
         id: commentId,
@@ -13,7 +22,16 @@ function createInvalidCommentNode(commentId, parentId, status, time = 0) {
     };
 }
 
-// Helper function that builds comment and child comment data
+/**
+ * Fetches and validates a single comment from the API, then recursively builds
+ * its nested reply tree sorted newest to oldest.
+ * Returns an invalid placeholder node when the comment cannot be used.
+ * Returns null when the comment's parent does not match the expected position in the tree.
+ * @param {object} api - The Hacker News API instance.
+ * @param {number} commentId - The ID of the comment to fetch.
+ * @param {number} expectedParentId - The ID that this comment's parent field must match.
+ * @returns {Promise<object|null>} A comment node object, or null if the parent does not match.
+ */
 async function buildCommentNode(api, commentId, expectedParentId) {
     let comment;
 
@@ -26,7 +44,7 @@ async function buildCommentNode(api, commentId, expectedParentId) {
     // show invalid/unavailable comments instead of hiding them
     if (!comment) return createInvalidCommentNode(commentId, expectedParentId, "unavailable");
     if (comment.type !== "comment") return createInvalidCommentNode(commentId, expectedParentId, "unavailable", comment.time ?? 0);
-    // parent must match expected tree position
+    // parent must match expected tree position to prevent orphaned comments
     if (comment.parent !== expectedParentId) return null;
     if (comment.deleted === true) return createInvalidCommentNode(comment.id, comment.parent, "deleted", comment.time ?? 0);
     if (comment.dead === true) return createInvalidCommentNode(comment.id, comment.parent, "unavailable", comment.time ?? 0);
@@ -39,7 +57,7 @@ async function buildCommentNode(api, commentId, expectedParentId) {
         childIds.map((childId) => buildCommentNode(api, childId, comment.id))
     );
 
-    //sort the nested comments
+    // sort nested comments newest to oldest
     const replies = childNodes
         .filter((node) => node !== null)
         .sort((a, b) => b.time - a.time);
@@ -56,7 +74,14 @@ async function buildCommentNode(api, commentId, expectedParentId) {
     };
 }
 
-// Builds a comment structure for rendering
+/**
+ * Builds and caches the full comment tree for a post.
+ * Direct comments and all nested replies are sorted newest to oldest.
+ * Reuses the cached result when the same post is opened again to avoid redundant API requests.
+ * @param {object} api - The Hacker News API instance.
+ * @param {{ id?: number, kids?: number[] }} post - The post whose comments to load.
+ * @returns {Promise<{ postId: number|null, totalDirectComments: number, comments: object[] }>}
+ */
 export async function commentBuild(api, post) {
     if (!api || !post) {
         return { postId: null, totalDirectComments: 0, comments: [] };
@@ -71,7 +96,6 @@ export async function commentBuild(api, post) {
     if (postCommentsCache.has(postId)) {
         return postCommentsCache.get(postId);
     }
-
 
     if (!postId || commentIds.length === 0) {
         return { postId, totalDirectComments: 0, comments: [] };
@@ -97,4 +121,3 @@ export async function commentBuild(api, post) {
 
     return result;
 }
-
