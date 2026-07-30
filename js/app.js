@@ -242,6 +242,10 @@ async function loadMorePosts() {
         return item.type === "story" || item.type === "job" || item.type === "poll";
     });
 
+    // sort by actual item time newest to oldest (FR-03)
+    // posts.js sorts by ID as a proxy but true ordering requires item.time
+    visibleItems.sort((a, b) => (b.time ?? 0) - (a.time ?? 0));
+
     visibleItems.forEach((post) => {
         const title = post.title || `Post ${post.id}`;
         const listItem = document.createElement("li");
