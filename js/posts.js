@@ -7,11 +7,10 @@ let indexOffset = 0;
 /**
  * Initializes and sorts the items feed.
  *
- * @param {object} api - The Hacker News API instance.
  * @param {number[]} newStoryIds - The latest story/poll IDs.
  * @param {number[]} newJobStoryIds - The latest job IDs.
  */
-export function initItems(api, newStoryIds, newJobStoryIds) {
+export function initItems(newStoryIds, newJobStoryIds) {
   const mergedIds = [...newStoryIds, ...newJobStoryIds];
   // Deduplicate so the same post cannot appear twice across feed modes.
   allItems = Array.from(new Set(mergedIds));

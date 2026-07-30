@@ -159,22 +159,22 @@ export function createFeedController(deps) {
 
         // Route each mode to the correct cached ID list.
         if (mode === "all") {
-            initItems(api, feedCache.storyIds, feedCache.jobIds);
+            initItems(feedCache.storyIds, feedCache.jobIds);
         } else if (mode === "stories") {
-            initItems(api, feedCache.storyIds, []);
+            initItems(feedCache.storyIds, []);
         } else if (mode === "jobs") {
-            initItems(api, [], feedCache.jobIds);
+            initItems([], feedCache.jobIds);
         } else if (mode === "polls") {
-            initItems(api, feedCache.pollIds, []);
+            initItems(feedCache.pollIds, []);
         } else if (mode === "top") {
-            initItems(api, feedCache.topIds, []);
+            initItems(feedCache.topIds, []);
         } else if (mode === "best") {
-            initItems(api, feedCache.bestIds, []);
+            initItems(feedCache.bestIds, []);
         } else if (mode === "ask") {
-            initItems(api, feedCache.askIds, []);
+            initItems(feedCache.askIds, []);
         } else {
             // "show"
-            initItems(api, feedCache.showIds, []);
+            initItems(feedCache.showIds, []);
         }
 
         // Count available source IDs for the selected mode.

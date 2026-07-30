@@ -4,7 +4,7 @@ import test from "node:test";
 import { getNextBatch, initItems } from "../js/posts.js";
 
 test("initItems deduplicates merged story and job IDs", () => {
-    initItems({}, [10, 30, 20], [20, 5, 30]);
+    initItems([10, 30, 20], [20, 5, 30]);
 
     const batch = getNextBatch();
 
@@ -12,7 +12,7 @@ test("initItems deduplicates merged story and job IDs", () => {
 });
 
 test("getNextBatch does not repeat IDs between batches", () => {
-    initItems({}, Array.from({ length: 20 }, (_, index) => index + 1), []);
+    initItems(Array.from({ length: 20 }, (_, index) => index + 1), []);
 
     const firstBatch = getNextBatch();
     const secondBatch = getNextBatch();
