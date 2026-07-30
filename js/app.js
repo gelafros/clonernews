@@ -4,6 +4,48 @@ import { getNextBatch, hasMore, initItems } from "./posts.js";
 
 const api = createHackerNewsApi(requestJson);
 
+// Creates the minimal app shell in the DOM when page is empty
+function ensureAppShell() {
+    if (document.getElementById("status")) {
+        return;
+    }
+
+    const title = document.createElement("h1");
+    title.textContent = "Clonernews";
+
+    const status = document.createElement("p");
+    status.id = "status";
+    status.textContent = "Starting...";
+
+    const postsTitle = document.createElement("h2");
+    postsTitle.textContent = "Posts";
+
+    const postList = document.createElement("ul");
+    postList.id = "post-list";
+
+    const loadMoreButton = document.createElement("button");
+    loadMoreButton.id = "load-more";
+    loadMoreButton.type = "button";
+    loadMoreButton.textContent = "Load more";
+
+    const selectedTitle = document.createElement("h2");
+    selectedTitle.id = "selected-title";
+    selectedTitle.textContent = "Select a post";
+
+    const commentsContainer = document.createElement("div");
+    commentsContainer.id = "comments";
+
+    document.body.append(
+        title,
+        status,
+        postsTitle,
+        postList,
+        loadMoreButton,
+        selectedTitle,
+        commentsContainer
+    );
+}
+
 // Formats unix time for display in the UI
 function formatTime(unixSeconds) {
     if (!unixSeconds) {
@@ -25,7 +67,13 @@ function createCommentList(commentNodes) {
         meta.textContent = `${comment.by} - ${formatTime(comment.time)}`;
 
         const text = document.createElement("p");
-        text.textContent = comment.text || "(no text)";
+        if (comment.isValid === false) {
+            text.textContent = comment.status === "deleted" ? "Deleted by user" : "Unavailable";
+            item.style.opacity = "0.6";
+            item.style.fontStyle = "italic";
+        } else {
+            text.textContent = comment.text || "(no text)";
+        }
 
         item.append(meta, text);
 
@@ -118,6 +166,8 @@ async function loadMorePosts() {
 
 // Starts the app, loads first posts, and wires load-more click
 async function start() {
+    ensureAppShell();
+
     const status = document.getElementById("status");
     const loadMoreButton = document.getElementById("load-more");
 
