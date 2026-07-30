@@ -84,6 +84,58 @@ test("fetchNewStoryIds requests the new stories endpoint", async () => {
   assert.equal(storyIds, expectedIds);
 });
 
+test("fetchTopStoryIds requests the top stories endpoint", async () => {
+  const expectedIds = [401, 402, 403];
+  const requestJson = async (url) => {
+    assert.equal(url, "https://hacker-news.firebaseio.com/v0/topstories.json");
+    return expectedIds;
+  };
+  const api = createHackerNewsApi(requestJson);
+
+  const topIds = await api.fetchTopStoryIds();
+
+  assert.equal(topIds, expectedIds);
+});
+
+test("fetchBestStoryIds requests the best stories endpoint", async () => {
+  const expectedIds = [501, 502, 503];
+  const requestJson = async (url) => {
+    assert.equal(url, "https://hacker-news.firebaseio.com/v0/beststories.json");
+    return expectedIds;
+  };
+  const api = createHackerNewsApi(requestJson);
+
+  const bestIds = await api.fetchBestStoryIds();
+
+  assert.equal(bestIds, expectedIds);
+});
+
+test("fetchAskStoryIds requests the ask stories endpoint", async () => {
+  const expectedIds = [601, 602];
+  const requestJson = async (url) => {
+    assert.equal(url, "https://hacker-news.firebaseio.com/v0/askstories.json");
+    return expectedIds;
+  };
+  const api = createHackerNewsApi(requestJson);
+
+  const askIds = await api.fetchAskStoryIds();
+
+  assert.equal(askIds, expectedIds);
+});
+
+test("fetchShowStoryIds requests the show stories endpoint", async () => {
+  const expectedIds = [701, 702];
+  const requestJson = async (url) => {
+    assert.equal(url, "https://hacker-news.firebaseio.com/v0/showstories.json");
+    return expectedIds;
+  };
+  const api = createHackerNewsApi(requestJson);
+
+  const showIds = await api.fetchShowStoryIds();
+
+  assert.equal(showIds, expectedIds);
+});
+
 test("fetchJobStoryIds requests the job stories endpoint", async () => {
   const expectedIds = [201, 202];
   const requestJson = async (url) => {
@@ -108,4 +160,17 @@ test("fetchUpdatedItemIds returns item IDs from the live updates endpoint", asyn
   const updatedItemIds = await api.fetchUpdatedItemIds();
 
   assert.equal(updatedItemIds, expectedIds);
+});
+
+test("fetchMaxItemId requests the maxitem endpoint", async () => {
+  const expectedMaxId = 999;
+  const requestJson = async (url) => {
+    assert.equal(url, "https://hacker-news.firebaseio.com/v0/maxitem.json");
+    return expectedMaxId;
+  };
+  const api = createHackerNewsApi(requestJson);
+
+  const maxId = await api.fetchMaxItemId();
+
+  assert.equal(maxId, expectedMaxId);
 });

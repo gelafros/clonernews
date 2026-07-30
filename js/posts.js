@@ -12,7 +12,9 @@ let indexOffset = 0;
  * @param {number[]} newJobStoryIds - The latest job IDs.
  */
 export function initItems(api, newStoryIds, newJobStoryIds) {
-  allItems = [...newStoryIds, ...newJobStoryIds];
+  const mergedIds = [...newStoryIds, ...newJobStoryIds];
+  // Deduplicate so the same post cannot appear twice across feed modes.
+  allItems = Array.from(new Set(mergedIds));
   allItems.sort((a, b) => b - a);
   indexOffset = 0;
 }
@@ -23,6 +25,7 @@ export function initItems(api, newStoryIds, newJobStoryIds) {
  * @returns {number[]} Array of item IDs.
  */
 export function getNextBatch() {
+  // Fixed-size batches keep rendering consistent with the load-more UX.
   const batch = allItems.slice(indexOffset, indexOffset + 15);
   indexOffset += 15;
   return batch;

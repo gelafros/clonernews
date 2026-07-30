@@ -24,7 +24,7 @@ function createInvalidCommentNode(commentId, parentId, status, time = 0) {
 
 /**
  * Fetches and validates a single comment from the API, then recursively builds
- * its nested reply tree sorted newest to oldest.
+ * its nested reply tree while keeping comments ordered from newest to oldest.
  * Returns an invalid placeholder node when the comment cannot be used.
  * Returns null when the comment's parent does not match the expected position in the tree.
  * @param {object} api - The Hacker News API instance.
@@ -57,10 +57,10 @@ async function buildCommentNode(api, commentId, expectedParentId) {
         childIds.map((childId) => buildCommentNode(api, childId, comment.id))
     );
 
-    // sort nested comments newest to oldest
+    // Keep nested replies newest-to-oldest for audit ordering requirements.
     const replies = childNodes
         .filter((node) => node !== null)
-        .sort((a, b) => b.time - a.time);
+        .sort((a, b) => (b.time ?? 0) - (a.time ?? 0));
 
     return {
         id: comment.id,
@@ -76,7 +76,7 @@ async function buildCommentNode(api, commentId, expectedParentId) {
 
 /**
  * Builds and caches the full comment tree for a post.
- * Direct comments and all nested replies are sorted newest to oldest.
+ * Direct comments and all nested replies are ordered from newest to oldest.
  * Reuses the cached result when the same post is opened again to avoid redundant API requests.
  * @param {object} api - The Hacker News API instance.
  * @param {{ id?: number, kids?: number[] }} post - The post whose comments to load.
@@ -106,9 +106,10 @@ export async function commentBuild(api, post) {
         commentIds.map((id) => buildCommentNode(api, id, postId))
     );
 
+    // Keep top-level comments newest-to-oldest for audit ordering requirements.
     const comments = commentNodes
         .filter((node) => node !== null)
-        .sort((a, b) => b.time - a.time);
+        .sort((a, b) => (b.time ?? 0) - (a.time ?? 0));
 
     const result = {
         postId,
