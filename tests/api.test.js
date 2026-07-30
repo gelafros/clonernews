@@ -109,3 +109,16 @@ test("fetchUpdatedItemIds returns item IDs from the live updates endpoint", asyn
 
   assert.equal(updatedItemIds, expectedIds);
 });
+
+test("fetchMaxItemId requests the maxitem endpoint", async () => {
+  const expectedMaxId = 999;
+  const requestJson = async (url) => {
+    assert.equal(url, "https://hacker-news.firebaseio.com/v0/maxitem.json");
+    return expectedMaxId;
+  };
+  const api = createHackerNewsApi(requestJson);
+
+  const maxId = await api.fetchMaxItemId();
+
+  assert.equal(maxId, expectedMaxId);
+});

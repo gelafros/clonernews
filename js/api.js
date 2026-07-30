@@ -73,10 +73,20 @@ export function createHackerNewsApi(requestJson) {
     return updates.items;
   }
 
+  /**
+    * Returns the current maximum item ID from Hacker News.
+    * Used by poll discovery to scan recent items backward.
+   * @returns {Promise<number>} The latest known item ID.
+   */
+  async function fetchMaxItemId() {
+    return requestJson(`${API_BASE_URL}/maxitem.json`);
+  }
+
   return {
     fetchItem,
     fetchNewStoryIds,
     fetchJobStoryIds,
     fetchUpdatedItemIds,
+    fetchMaxItemId,
   };
 }
