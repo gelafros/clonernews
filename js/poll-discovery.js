@@ -1,9 +1,11 @@
 export const POLL_SEARCH_TIMEOUT_MS = 4000;
+const POLL_BATCH_SIZE = 5;
 let nextScanStartId = null;
 
 /**
  * Finds recent poll IDs by scanning backward from the latest item ID.
- * Stops searching when a timeout window is reached.
+ * Fetches items in parallel batches to reduce total scan time and avoid
+ * sequential API calls.
  * @param {{ fetchMaxItemId: () => Promise<number>, fetchItem: (id: number) => Promise<any> }} api - Hacker News API helpers.
  * @param {number} [maxPolls=20] - Maximum number of poll IDs to collect.
  * @param {number} [scanLimit=4000] - Maximum number of item IDs to scan.
@@ -35,22 +37,41 @@ export async function findRecentPollIds(
     let timedOut = false;
     let currentId = startId;
 
-    for (; currentId >= minItemId && pollIds.length < maxPolls; currentId -= 1) {
+    // Fetch items in parallel batches instead of one at a time.
+    // Each batch of POLL_BATCH_SIZE requests runs concurrently, then the
+    // next batch starts — balancing speed against API request volume.
+    while (currentId >= minItemId && pollIds.length < maxPolls) {
         if (Date.now() - startedAt >= timeoutMs) {
             timedOut = true;
             break;
         }
 
-        let item;
-
-        try {
-            item = await api.fetchItem(currentId);
-        } catch {
-            continue;
+        // Collect the IDs for this batch without going below minItemId.
+        const batchIds = [];
+        for (
+            let i = 0;
+            i < POLL_BATCH_SIZE && currentId >= minItemId;
+            i += 1, currentId -= 1
+        ) {
+            batchIds.push(currentId);
         }
 
-        if (item && item.type === "poll") {
-            pollIds.push(item.id);
+        // Fetch all IDs in this batch concurrently.
+        const batchItems = await Promise.all(
+            batchIds.map(async (id) => {
+                try {
+                    return await api.fetchItem(id);
+                } catch {
+                    return null;
+                }
+            }),
+        );
+
+        // Collect any polls found in this batch.
+        for (const item of batchItems) {
+            if (item && item.type === "poll" && pollIds.length < maxPolls) {
+                pollIds.push(item.id);
+            }
         }
     }
 
