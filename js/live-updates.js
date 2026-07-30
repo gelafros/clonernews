@@ -51,9 +51,15 @@ export function createLiveUpdates(api, getDisplayedPosts, showNotification) {
   /**
    * Fetches the current update list and notifies only for new updates to displayed posts.
    * Silently ignores failed network requests so a transient error does not stop the timer.
+   * Skips the network request entirely while the browser tab is not visible.
    * @returns {Promise<void>}
    */
   async function checkForUpdates() {
+    // Skip network requests while the tab is hidden to respect the API.
+    if (typeof document !== "undefined" && document.hidden) {
+      return;
+    }
+
     let currentUpdatedIds;
 
     try {
