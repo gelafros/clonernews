@@ -2,10 +2,7 @@
 
 Type this on a terminal:
 
-python3 -m http.server 8000 --directory static
-
-
-
+python3 -m http.server 8000
 
 then use this url:
 
