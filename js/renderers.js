@@ -131,6 +131,15 @@ function createPostButton(post, onPostSelect) {
     }
 
     button.addEventListener("click", () => {
+        // Remove selection from the previously highlighted post button.
+        const previous = document.querySelector(".post-list button.selected");
+        if (previous) {
+            previous.classList.remove("selected");
+            previous.removeAttribute("aria-current");
+        }
+
+        button.classList.add("selected");
+        button.setAttribute("aria-current", "true");
         onPostSelect(post);
     });
 
