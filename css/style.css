@@ -1,0 +1,252 @@
+/* ===== Reset ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== Custom properties ===== */
+:root {
+    --clr-orange: #ff6600;
+    --clr-orange-dark: #e05500;
+    --clr-bg: #f6f6ef;
+    --clr-surface: #ffffff;
+    --clr-text: #1a1a1a;
+    --clr-text-muted: #828282;
+    --clr-border: #e6e6e6;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+    --radius: 6px;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --max-width: 860px;
+}
+
+/* ===== Base ===== */
+body {
+    font-family: var(--font);
+    background: var(--clr-bg);
+    color: var(--clr-text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* ===== Header ===== */
+.app-header {
+    background: var(--clr-orange);
+    color: #fff;
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.app-header h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+/* ===== Live updates ===== */
+.live-updates {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    overflow: hidden;
+}
+
+.live-updates h2 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    opacity: 0.8;
+}
+
+#live-update-message {
+    color: rgba(255, 255, 255, 0.92);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ===== Main layout ===== */
+.app-main {
+    max-width: var(--max-width);
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ===== Status message ===== */
+.status-message {
+    font-size: 0.875rem;
+    color: var(--clr-text-muted);
+}
+
+/* ===== Posts section ===== */
+.posts-section {
+    background: var(--clr-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1rem 1.25rem;
+}
+
+.posts-section > h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--clr-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--clr-border);
+}
+
+/* ===== Post list ===== */
+.post-list {
+    list-style: none;
+}
+
+.post-list li {
+    border-bottom: 1px solid var(--clr-border);
+}
+
+.post-list li:last-child {
+    border-bottom: none;
+}
+
+.post-list li button {
+    width: 100%;
+    text-align: left;
+    padding: 0.6rem 0.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    color: var(--clr-text);
+    transition: color 0.15s;
+}
+
+.post-list li button:hover {
+    color: var(--clr-orange);
+}
+
+.post-list li button:focus-visible {
+    outline: 2px solid var(--clr-orange);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+/* ===== Load more button ===== */
+.btn-load-more {
+    display: block;
+    margin: 1rem auto 0;
+    padding: 0.45rem 1.5rem;
+    background: var(--clr-orange);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+}
+
+.btn-load-more:hover:not(:disabled) {
+    background: var(--clr-orange-dark);
+}
+
+.btn-load-more:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* ===== Selected post section ===== */
+.selected-section {
+    background: var(--clr-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1rem 1.25rem;
+}
+
+.selected-section > h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--clr-border);
+    color: var(--clr-text);
+}
+
+/* ===== Comments ===== */
+.comments-container {
+    font-size: 0.875rem;
+}
+
+.comments-container ul {
+    list-style: none;
+}
+
+.comments-container > ul > li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--clr-border);
+}
+
+.comments-container > ul > li:last-child {
+    border-bottom: none;
+}
+
+/* Nested comment indentation */
+.comments-container ul ul {
+    margin-top: 0.5rem;
+    margin-left: 1rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--clr-border);
+}
+
+/* Comment metadata: author and date */
+.comments-container li > div {
+    font-size: 0.75rem;
+    color: var(--clr-text-muted);
+    margin-bottom: 0.2rem;
+}
+
+/* Comment body text */
+.comments-container li > p {
+    color: var(--clr-text);
+    line-height: 1.5;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+    .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+        padding: 0.5rem 1rem;
+    }
+
+    #live-update-message {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    .app-main {
+        margin: 1rem auto;
+        gap: 1rem;
+    }
+}
