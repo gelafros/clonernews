@@ -1,8 +1,30 @@
 import { createHackerNewsApi, requestJson } from "./api.js";
 import { commentBuild } from "./comments.js";
+import {
+    createLiveUpdates,
+    formatUpdateMessage,
+} from "./live-updates.js";
 import { getNextBatch, hasMore, initItems } from "./posts.js";
 
 const api = createHackerNewsApi(requestJson);
+const displayedPosts = new Map();
+
+// Returns only posts that have been rendered in the current post list.
+function getDisplayedPosts() {
+    return Array.from(displayedPosts.values());
+}
+
+// Shows a title-based message when one or more displayed posts are updated.
+function showLiveUpdateNotification(updatedPosts) {
+    const liveUpdateMessage = document.getElementById("live-update-message");
+    liveUpdateMessage.textContent = formatUpdateMessage(updatedPosts);
+}
+
+const liveUpdates = createLiveUpdates(
+    api,
+    getDisplayedPosts,
+    showLiveUpdateNotification,
+);
 
 // Creates the minimal app shell in the DOM when page is empty
 function ensureAppShell() {
@@ -155,9 +177,11 @@ async function loadMorePosts() {
     });
 
     visibleItems.forEach((post) => {
+        const title = post.title || `Post ${post.id}`;
         const listItem = document.createElement("li");
         listItem.appendChild(createPostButton(post));
         postList.appendChild(listItem);
+        displayedPosts.set(post.id, { id: post.id, title });
     });
 
     // disable button when feed has no more IDs to load
@@ -185,6 +209,7 @@ async function start() {
         await loadMorePosts();
 
         loadMoreButton.addEventListener("click", loadMorePosts);
+        await liveUpdates.start();
         status.textContent = "Posts loaded.";
     } catch {
         status.textContent = "Failed to load posts.";
