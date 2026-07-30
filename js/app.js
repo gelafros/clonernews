@@ -8,9 +8,16 @@ import {
 import { createPostSelectionController } from "./post-selection-controller.js";
 import { ensureAppShell } from "./ui-shell.js";
 
+/** @type {object} The Hacker News API instance */
 const api = createHackerNewsApi(requestJson);
+
+/** @type {Map<number, { id: number, title: string }>} Map of displayed post IDs to their metadata */
 const displayedPosts = new Map();
+
+/** @type {any[]} List of rendered feed post items */
 const renderedFeed = [];
+
+/** @type {{ storyIds: number[], jobIds: number[], pollIds: number[] }} Cache of fetched item IDs by category */
 const feedCache = {
     storyIds: [],
     jobIds: [],

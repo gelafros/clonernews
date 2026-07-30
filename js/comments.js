@@ -1,3 +1,4 @@
+/** @type {Map<number, object>} Cache of built comment trees keyed by post ID */
 const postCommentsCache = new Map();
 
 /**

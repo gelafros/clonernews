@@ -2,6 +2,7 @@ import { getNextBatch, hasMore, initItems } from "./posts.js";
 import { findRecentPollIds } from "./poll-discovery.js";
 import { appendToPostList, renderPostList } from "./renderers.js";
 
+/** @type {number} Debounce time in milliseconds for feed mode switching */
 const FEED_CHANGE_DEBOUNCE_MS = 250;
 
 /**

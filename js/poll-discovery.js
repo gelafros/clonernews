@@ -1,5 +1,10 @@
+/** @type {number} Timeout duration for poll scanning in milliseconds */
 export const POLL_SEARCH_TIMEOUT_MS = 4000;
+
+/** @type {number} Number of items to fetch concurrently in a single batch */
 const POLL_BATCH_SIZE = 5;
+
+/** @type {number|null} The next item ID to start scanning from, or null if scanning from maxitem */
 let nextScanStartId = null;
 
 /**
