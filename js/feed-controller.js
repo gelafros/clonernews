@@ -156,14 +156,20 @@ export function createFeedController(deps) {
             return;
         }
 
-        status.textContent = "Loading posts...";
-        await loadMorePosts();
+        try {
+            status.textContent = "Loading posts...";
+            await loadMorePosts();
 
-        if (currentFeedRequestId !== activeFeedRequestId) {
-            return;
+            if (currentFeedRequestId !== activeFeedRequestId) {
+                return;
+            }
+
+            status.textContent = "Posts loaded.";
+        } catch {
+            if (currentFeedRequestId === activeFeedRequestId) {
+                status.textContent = "Failed to load posts.";
+            }
         }
-
-        status.textContent = "Posts loaded.";
     }
 
     /**
