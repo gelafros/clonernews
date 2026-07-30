@@ -102,7 +102,7 @@ export function createHackerNewsApi(requestJson) {
    */
   async function fetchUpdatedItemIds() {
     const updates = await requestJson(`${API_BASE_URL}/updates.json`);
-    return updates.items;
+    return updates?.items ?? [];
   }
 
   /**
