@@ -1,4 +1,4 @@
-/* ===== Reset ===== */
+/* ===== Reset & Base Settings ===== */
 *,
 *::before,
 *::after {
@@ -7,125 +7,257 @@
     padding: 0;
 }
 
-/* ===== Custom properties ===== */
 :root {
+    /* Premium Color Palette */
     --clr-orange: #ff6600;
-    --clr-orange-dark: #e05500;
-    --clr-bg: #f6f6ef;
+    --clr-orange-hover: #ff7c26;
+    --clr-orange-light: rgba(255, 102, 0, 0.08);
+    --clr-orange-border: rgba(255, 102, 0, 0.2);
+    
+    --clr-bg: #fafafa;
     --clr-surface: #ffffff;
-    --clr-text: #1a1a1a;
-    --clr-text-muted: #828282;
-    --clr-border: #e6e6e6;
-    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
-    --radius: 6px;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --max-width: 1500px;
+    --clr-surface-header: rgba(255, 255, 255, 0.8);
+    --clr-text: #171717;
+    --clr-text-secondary: #4a4a4a;
+    --clr-text-muted: #767676;
+    --clr-border: #eaeaea;
+    --clr-success: #10b981;
+    
+    /* Typography & Effects */
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, sans-serif;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --max-width: 1400px;
 }
 
-/* ===== Base ===== */
 body {
     font-family: var(--font);
     background: var(--clr-bg);
     color: var(--clr-text);
-    line-height: 1.6;
+    line-height: 1.5;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* ===== Header ===== */
+/* ===== Scrollbar Styling ===== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #cccccc;
+}
+
+/* ===== Sticky Glassmorphism Header ===== */
 .app-header {
-    background: var(--clr-orange);
-    color: #fff;
-    padding: 0.6rem 1.5rem;
+    background: var(--clr-surface-header);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--clr-border);
+    padding: 0.85rem 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 1.5rem;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .app-header h1 {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
+    letter-spacing: -0.02em;
+    color: var(--clr-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-/* ===== Live updates ===== */
+.app-header h1::before {
+    content: "Y";
+    background: var(--clr-orange);
+    color: white;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+    border-radius: 4px;
+    margin-right: 0.15rem;
+}
+
+/* ===== Live Updates Panel ===== */
 .live-updates {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.82rem;
-    overflow: hidden;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    padding: 0.4rem 0.85rem;
+    border-radius: 99px;
+    max-width: 400px;
+    box-shadow: var(--shadow-sm);
 }
 
 .live-updates h2 {
-    font-size: 0.82rem;
-    font-weight: 700;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--clr-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     white-space: nowrap;
-    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.live-updates h2::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background-color: var(--clr-success);
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    animation: pulse 2s infinite;
 }
 
 #live-update-message {
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--clr-text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-weight: 450;
 }
 
-/* ===== Main layout ===== */
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* ===== Main Layout Grid ===== */
 .app-main {
     max-width: var(--max-width);
-    margin: 1.25rem auto;
-    padding: 0 0.75rem;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 1.1fr 0.9fr;
     align-items: start;
-    gap: 1.1rem;
+    gap: 1.75rem;
 }
 
-/* ===== Status message ===== */
+/* ===== Status Message Banner ===== */
 .status-message {
     grid-column: 1 / -1;
-    font-size: 0.875rem;
-    color: var(--clr-text-muted);
+    font-size: 0.85rem;
+    color: var(--clr-text-secondary);
+    background: #f1f1f1;
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-left: 3px solid var(--clr-text-muted);
 }
 
-/* ===== Posts section ===== */
-.posts-section {
+/* ===== Sections/Panels Base ===== */
+.posts-section,
+.selected-section {
     background: var(--clr-surface);
     border-radius: var(--radius);
+    border: 1px solid var(--clr-border);
     box-shadow: var(--shadow);
-    padding: 1rem 1.25rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
 }
 
-.posts-section>h2 {
+.posts-section > h2 {
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--clr-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.07em;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--clr-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-/* ===== Post list ===== */
+/* Custom Dropdown Filter UI */
+#feed-select {
+    padding: 0.35rem 1.75rem 0.35rem 0.75rem;
+    font-family: var(--font);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--clr-text-secondary);
+    background-color: var(--clr-bg);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234a4a4a' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 0.85rem;
+}
+
+#feed-select:hover {
+    border-color: #cccccc;
+    background-color: #f1f1f1;
+}
+
+#feed-select:focus {
+    border-color: var(--clr-orange);
+    box-shadow: 0 0 0 2px var(--clr-orange-light);
+}
+
+/* ===== Post List Items ===== */
 .post-list {
     list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .post-list li {
-    border-bottom: 1px solid var(--clr-border);
-}
-
-.post-list li:last-child {
-    border-bottom: none;
+    border: none;
 }
 
 .post-list li button {
@@ -133,111 +265,161 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     text-align: left;
-    padding: 0.6rem 0.25rem;
-    background: none;
-    border: none;
+    padding: 0.75rem 0.85rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-family: var(--font);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
+    font-weight: 500;
     color: var(--clr-text);
-    transition: color 0.15s;
+    transition: var(--transition);
+}
+
+.post-list li button:hover {
+    background-color: #f7f7f7;
+    border-color: var(--clr-border);
 }
 
 .post-button-label {
     min-width: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    flex: 1;
 }
 
+/* Custom indicator bubbles for comments count availability */
 .post-comment-indicator {
     flex: 0 0 auto;
-    width: 1.15rem;
-    height: 1.15rem;
-    border-radius: 999px;
-    border: 1px solid var(--clr-orange);
-    color: var(--clr-orange-dark);
-    font-size: 0.65rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    border: 1px solid var(--clr-orange-border);
+    background-color: var(--clr-orange-light);
+    color: var(--clr-orange);
+    font-size: 0.7rem;
     font-weight: 700;
     line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: var(--transition);
 }
 
-.post-list li button:hover {
-    color: var(--clr-orange);
+.post-list li button:hover .post-comment-indicator {
+    background-color: var(--clr-orange);
+    border-color: var(--clr-orange);
+    color: white;
 }
 
 .post-list li button:focus-visible {
     outline: 2px solid var(--clr-orange);
-    outline-offset: 2px;
-    border-radius: 3px;
+    outline-offset: 1px;
 }
 
-/* ===== Selected post highlight ===== */
+/* ===== Selected Post Highlight State ===== */
 .post-list li button.selected {
     color: var(--clr-orange);
-    background: rgba(255, 102, 0, 0.06);
-    border-radius: 3px;
+    background-color: var(--clr-orange-light);
+    border-color: var(--clr-orange-border);
 }
 
 .post-list li button.selected .post-button-label {
     font-weight: 600;
 }
 
-/* ===== Load more button ===== */
+.post-list li button.selected .post-comment-indicator {
+    background-color: var(--clr-orange);
+    border-color: var(--clr-orange);
+    color: white;
+}
+
+/* ===== Load More Feed Button ===== */
 .btn-load-more {
     display: block;
-    margin: 1rem auto 0;
-    padding: 0.45rem 1.5rem;
+    margin: 1.25rem auto 0.25rem;
+    padding: 0.6rem 2.25rem;
     background: var(--clr-orange);
     color: #fff;
     border: none;
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     font-family: var(--font);
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
     cursor: pointer;
-    transition: background 0.15s, opacity 0.15s;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(255, 102, 0, 0.15);
 }
 
 .btn-load-more:hover:not(:disabled) {
-    background: var(--clr-orange-dark);
+    background: var(--clr-orange-hover);
+    box-shadow: 0 4px 8px rgba(255, 102, 0, 0.25);
+    transform: translateY(-1px);
+}
+
+.btn-load-more:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .btn-load-more:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
+    box-shadow: none;
     cursor: not-allowed;
 }
 
-/* ===== Selected post section ===== */
+/* ===== Selected Post Detail View ===== */
 .selected-section {
-    background: var(--clr-surface);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 1rem 1.25rem;
+    border-color: var(--clr-border);
 }
 
-.selected-section>h2 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
+.selected-section > h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--clr-border);
     color: var(--clr-text);
 }
 
-/* ===== Desktop panel scrolling ===== */
-@media (min-width: 601px) {
-
-    .posts-section,
-    .selected-section {
-        max-height: calc(100vh - 9.5rem);
-        overflow-y: auto;
-    }
+#selected-post-content {
+    font-size: 0.9rem;
+    color: var(--clr-text-secondary);
+    margin-bottom: 1.25rem;
+    background-color: var(--clr-bg);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--clr-border);
+    word-break: break-word;
 }
 
-/* ===== Comments ===== */
+#selected-post-content p:first-child {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--clr-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.4rem;
+}
+
+#selected-post-content a {
+    color: var(--clr-orange);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+#selected-post-content a:hover {
+    text-decoration: underline;
+    color: var(--clr-orange-hover);
+}
+
+/* ===== Comments Flow & Typography ===== */
 .comments-container {
     font-size: 0.875rem;
 }
@@ -246,55 +428,92 @@ body {
     list-style: none;
 }
 
-.comments-container>ul>li {
-    padding: 0.6rem 0;
+.comments-container > ul > li {
+    padding: 0.9rem 0;
     border-bottom: 1px solid var(--clr-border);
 }
 
-.comments-container>ul>li:last-child {
+.comments-container > ul > li:last-child {
     border-bottom: none;
 }
 
-/* Nested comment indentation */
+/* Recursive Nested Comments Left Border Line styling */
 .comments-container ul ul {
-    margin-top: 0.5rem;
-    margin-left: 1rem;
-    padding-left: 0.75rem;
-    border-left: 2px solid var(--clr-border);
+    margin-top: 0.75rem;
+    margin-left: 1.2rem;
+    padding-left: 1rem;
+    border-left: 2px solid #e5e7eb;
+    transition: border-color 0.2s ease;
 }
 
-/* Comment metadata: author and date */
-.comments-container li>div {
+.comments-container ul ul:hover {
+    border-left-color: var(--clr-orange-border);
+}
+
+/* Author initials and date row */
+.comments-container li > div {
     font-size: 0.75rem;
-    color: var(--clr-text-muted);
-    margin-bottom: 0.2rem;
+    font-weight: 600;
+    color: var(--clr-text-secondary);
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
-/* Comment body text */
-.comments-container li>p {
+.comments-container li > div::before {
+    content: "●";
+    color: var(--clr-orange);
+    font-size: 0.5rem;
+}
+
+/* Comment text content */
+.comments-container li > p {
     color: var(--clr-text);
-    line-height: 1.5;
+    line-height: 1.55;
+    word-break: break-word;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 600px) {
+/* ===== Scroll Container Constraints (Desktop UI) ===== */
+@media (min-width: 801px) {
+    .posts-section,
+    .selected-section {
+        height: calc(100vh - 8rem);
+        max-height: calc(100vh - 8rem);
+        overflow-y: auto;
+    }
+}
+
+/* ===== Responsive Breakpoint Styling (Mobile UI) ===== */
+@media (max-width: 800px) {
     .app-header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 0.3rem;
-        padding: 0.5rem 1rem;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+    }
+    
+    .app-header h1 {
+        justify-content: center;
     }
 
-    #live-update-message {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
+    .live-updates {
+        max-width: 100%;
+        justify-content: center;
     }
 
     .app-main {
         grid-template-columns: 1fr;
-        margin: 0.9rem auto;
-        padding: 0 0.8rem;
-        gap: 1rem;
+        margin: 1rem auto;
+        padding: 0 1rem;
+        gap: 1.25rem;
+    }
+    
+    .posts-section,
+    .selected-section {
+        max-height: none;
+        height: auto;
+        overflow-y: visible;
+        padding: 1.25rem;
     }
 }
