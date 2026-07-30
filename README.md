@@ -12,27 +12,39 @@ The app is split into small JavaScript modules, each with one clear responsibili
 - createHackerNewsApi exposes methods such as fetchItem, fetchNewStoryIds, fetchJobStoryIds, fetchUpdatedItemIds, and fetchMaxItemId.
 - fetchItem uses an in-memory cache and shares in-flight requests to avoid duplicate network calls.
 
-2. UI shell and rendering
-- js/ui-shell.js creates the full page structure at startup (header, status, feed selector, post list, selected post area, comments area).
-- js/renderers.js handles rendering of the post list, selected post content, and comment tree.
+2. App entrypoint and wiring
+- js/app.js is now a thin startup file.
+- It creates shared state, wires controllers, loads initial story/job IDs, registers UI events, and starts live updates.
 
-3. Feed preparation and pagination
+3. Feed controller
+- js/feed-controller.js handles feed mode switching (All, Stories, Jobs, Polls), post-list reset, poll discovery integration, and load-more behavior.
+- It debounces rapid feed-selector changes to reduce burst requests.
+- It also ignores stale async feed responses so old requests do not overwrite newer UI state.
+
+4. Post selection controller
+- js/post-selection-controller.js handles selected-post rendering and comment loading.
+- It ignores stale async comment responses when users click posts quickly.
+
+5. Feed preparation and pagination
 - js/posts.js merges feed IDs, deduplicates them, sorts newest first (highest ID first), and returns fixed-size batches.
 - The app never loads all posts at once. The Load more button asks for the next batch only when needed.
 
-4. Mode switching (All, New, Jobs, Polls)
-- js/app.js orchestrates startup and interactions.
-- On startup, it preloads New and Jobs IDs.
-- When the feed mode changes, it resets list state and initializes the correct source IDs.
-- Poll mode uses js/poll-discovery.js to scan recent items backward from maxitem with a timeout budget.
+6. Poll discovery
+- js/poll-discovery.js scans recent item IDs backward from maxitem to discover poll posts.
+- The scan is bounded by a timeout so the UI does not hang indefinitely.
 
-5. Post selection and comments
-- When a post is clicked, js/app.js renders the selected post details and requests comments through js/comments.js.
+7. Post and comment rendering
+- js/renderers.js handles rendering of the post list, selected post details, and nested comment tree.
 - js/comments.js builds a nested tree recursively from kids.
-- It keeps Hacker News order and stores built trees in a per-post cache so reopening a post is faster.
+- Comments are displayed newest-to-oldest at root and nested levels.
+- Built trees are cached per post so reopening the same post avoids redundant requests.
 - Deleted or unavailable comments are shown as placeholder nodes instead of silently disappearing.
 
-6. Live updates
+8. UI shell
+- js/ui-shell.js creates the full page structure at startup (header, status, feed selector, post list, selected post area, comments area).
+- Feed selector options are All, Stories, Jobs, and Polls.
+
+9. Live updates
 - js/live-updates.js polls updates.json every 5 seconds.
 - The first poll is a baseline (no notification).
 - Later polls compare previous IDs to current IDs and notify only when newly updated IDs match currently displayed posts.
@@ -61,3 +73,11 @@ From the repository root:
 npm test
 
 This runs the Node test suite with node --test.
+
+## Audit-relevant behavior
+
+- UI includes stories, jobs, and polls through the feed selector.
+- Posts are displayed newest-to-oldest.
+- Comments are validated against expected parent IDs before rendering.
+- Live updates are checked every 5 seconds.
+- Request pressure is reduced by shared item caching, debounced feed changes, and stale-response guards.
