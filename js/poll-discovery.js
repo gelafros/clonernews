@@ -1,11 +1,5 @@
-/** @type {number} Timeout duration for poll scanning in milliseconds */
-export const POLL_SEARCH_TIMEOUT_MS = 4000;
-
-/** @type {number} Number of items to fetch concurrently in a single batch */
-const POLL_BATCH_SIZE = 5;
-
-/** @type {number|null} The next item ID to start scanning from, or null if scanning from maxitem */
-let nextScanStartId = null;
+export const POLL_SEARCH_TIMEOUT_MS = 100000;
+const POLL_DISCOVERY_URL = "https://hn.algolia.com/api/v1/search_by_date?tags=poll";
 
 /**
  * Finds recent poll IDs by scanning backward from the latest item ID.
@@ -20,71 +14,40 @@ let nextScanStartId = null;
 export async function findRecentPollIds(
     api,
     maxPolls = 20,
-    scanLimit = 4000,
+    scanLimit = 10000,
     timeoutMs = POLL_SEARCH_TIMEOUT_MS,
 ) {
-    let maxItemId;
+    void api;
+    void scanLimit;
+
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(() => {
+        timeoutController.abort();
+    }, timeoutMs);
 
     try {
-        maxItemId = await api.fetchMaxItemId();
+        const response = await fetch(POLL_DISCOVERY_URL, {
+            signal: timeoutController.signal,
+        });
+
+        if (!response.ok) {
+            return { pollIds: [], timedOut: false };
+        }
+
+        const payload = await response.json();
+        const hits = Array.isArray(payload?.hits) ? payload.hits : [];
+
+        // objectID is the Hacker News item ID in Algolia results.
+        const pollIds = hits
+            .map((hit) => Number.parseInt(hit?.objectID, 10))
+            .filter((id) => Number.isInteger(id) && id > 0)
+            .filter((id, index, allIds) => allIds.indexOf(id) === index)
+            .slice(0, maxPolls);
+
+        return { pollIds, timedOut: false };
     } catch {
-        return { pollIds: [], timedOut: false };
+        return { pollIds: [], timedOut: timeoutController.signal.aborted };
+    } finally {
+        clearTimeout(timeoutId);
     }
-
-    if (nextScanStartId === null || nextScanStartId > maxItemId) {
-        nextScanStartId = maxItemId;
-    }
-
-    const pollIds = [];
-    const startId = nextScanStartId;
-    const minItemId = Math.max(1, startId - scanLimit + 1);
-    const startedAt = Date.now();
-    let timedOut = false;
-    let currentId = startId;
-
-    // Fetch items in parallel batches instead of one at a time.
-    // Each batch of POLL_BATCH_SIZE requests runs concurrently, then the
-    // next batch starts — balancing speed against API request volume.
-    while (currentId >= minItemId && pollIds.length < maxPolls) {
-        if (Date.now() - startedAt >= timeoutMs) {
-            timedOut = true;
-            break;
-        }
-
-        // Collect the IDs for this batch without going below minItemId.
-        const batchIds = [];
-        for (
-            let i = 0;
-            i < POLL_BATCH_SIZE && currentId >= minItemId;
-            i += 1, currentId -= 1
-        ) {
-            batchIds.push(currentId);
-        }
-
-        // Fetch all IDs in this batch concurrently.
-        const batchItems = await Promise.all(
-            batchIds.map(async (id) => {
-                try {
-                    return await api.fetchItem(id);
-                } catch {
-                    return null;
-                }
-            }),
-        );
-
-        // Collect any polls found in this batch.
-        for (const item of batchItems) {
-            if (item && item.type === "poll" && pollIds.length < maxPolls) {
-                pollIds.push(item.id);
-            }
-        }
-    }
-
-    // Resume at the next unscanned ID on the next call.
-    nextScanStartId = currentId;
-    if (nextScanStartId < 1) {
-        nextScanStartId = null;
-    }
-
-    return { pollIds, timedOut };
 }
