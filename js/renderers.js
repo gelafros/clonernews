@@ -29,6 +29,16 @@ function toPlainText(value) {
 }
 
 /**
+ * Builds an Algolia search URL for one poll post.
+ * @param {{ id: number, title?: string }} post - The poll post.
+ * @returns {string} Algolia search URL.
+ */
+function buildAlgoliaPollSearchUrl(post) {
+    const query = encodeURIComponent(post.title || String(post.id));
+    return `https://hn.algolia.com/?dateRange=all&page=0&prefix=false&query=${query}&sort=byDate&type=all`;
+}
+
+/**
  * Renders selected post metadata/content into the provided container elements.
  * @param {{ id: number, title?: string, type?: string, by?: string, time?: number, url?: string, text?: string }} post - The selected post.
  * @param {HTMLElement} selectedTitle - Element that displays the selected title.
@@ -50,12 +60,20 @@ export function renderSelectedPost(post, selectedTitle, selectedPostContent) {
         link.rel = "noopener noreferrer";
         link.textContent = post.url;
         selectedPostContent.appendChild(link);
-        return;
+    } else {
+        const text = document.createElement("p");
+        text.textContent = toPlainText(post.text) || "No content available.";
+        selectedPostContent.appendChild(text);
     }
 
-    const text = document.createElement("p");
-    text.textContent = toPlainText(post.text) || "No content available.";
-    selectedPostContent.appendChild(text);
+    if (post.type === "poll") {
+        const algoliaLink = document.createElement("a");
+        algoliaLink.href = buildAlgoliaPollSearchUrl(post);
+        algoliaLink.target = "_blank";
+        algoliaLink.rel = "noopener noreferrer";
+        algoliaLink.textContent = "View related Algolia results";
+        selectedPostContent.appendChild(algoliaLink);
+    }
 }
 
 /**
