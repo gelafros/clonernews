@@ -82,3 +82,6 @@ This runs the Node test suite with node --test.
 - **Live Updates**: Background updates check the HN live-updates endpoint every 5 seconds using a single timer. Pauses requests automatically when the browser tab is hidden (`document.hidden`).
 - **Throttling & Efficiency**: Throttles request rates using in-memory request-deduplication, debounced selector handlers, stale-response controller guards, and parallel batching (size of 5) during poll scans.
 - **Safety**: Raw API HTML is parsed inside a sandboxed `DOMParser` document rather than executing via dangerous `innerHTML` injections.
+## License
+
+MIT, see [LICENSE](LICENSE).
